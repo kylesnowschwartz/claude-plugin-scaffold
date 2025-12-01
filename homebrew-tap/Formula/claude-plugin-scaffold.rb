@@ -32,7 +32,7 @@ class ClaudePluginScaffold < Formula
     assert_match version.to_s, shell_output("#{bin}/claude-plugin-scaffold version")
 
     # Test scaffold creation
-    system bin / 'claude-plugin-scaffold', 'new', 'test-plugin'
-    assert_predicate testpath / 'test-plugin/test-plugin-plugin/.claude-plugin/plugin.json', :exist?
+    system bin / 'claude-plugin-scaffold', 'new', 'test-plugin', '--minimal'
+    assert_predicate testpath / 'test-plugin/plugin/.claude-plugin/plugin.json', :exist?
   end
 end
