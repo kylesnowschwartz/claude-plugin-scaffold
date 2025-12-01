@@ -3,4 +3,31 @@
 
 require 'claude_plugin_scaffold'
 
+# Handle root --help specially to show useful info
+if ARGV.empty? || %w[--help -h].include?(ARGV.first)
+  puts <<~HELP
+    claude-plugin-scaffold v#{ClaudePluginScaffold::VERSION}
+
+    Scaffold Claude Code plugins with a single command.
+
+    Usage:
+      claude-plugin-scaffold NAME [OPTIONS]    # Create a new plugin
+      claude-plugin-scaffold version           # Print version
+
+    Examples:
+      claude-plugin-scaffold my-plugin                    # Full scaffold
+      claude-plugin-scaffold my-plugin --minimal          # Manifests only
+      claude-plugin-scaffold my-plugin --hooks --commands # Select components
+      claude-plugin-scaffold my-suite --plugins 3         # Multi-plugin marketplace
+
+    Run `claude-plugin-scaffold NAME --help` for all options.
+  HELP
+  exit 0
+end
+
+# Default to 'new' command if first arg looks like a plugin name (not a subcommand)
+unless %w[new version v -v --version].include?(ARGV.first)
+  ARGV.unshift('new')
+end
+
 Dry::CLI.new(ClaudePluginScaffold::CLI).call
