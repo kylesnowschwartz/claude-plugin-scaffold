@@ -29,6 +29,17 @@ module ClaudePluginScaffold
       option :mcp, type: :boolean, default: nil, desc: 'Include MCP server config'
       option :tests, type: :boolean, default: nil, desc: 'Include bats test scaffold'
 
+      example [
+        'my-plugin                        # Full scaffold with all components',
+        'my-plugin --minimal              # Just manifests (plugin.json, marketplace.json)',
+        'my-plugin --hooks                # Only hooks (for event-driven plugins)',
+        'my-plugin --hooks --commands     # Hooks + slash commands',
+        'my-plugin --agents --skills      # AI-focused plugin (agents + skills)',
+        'my-plugin --commands --tests     # Commands with test scaffold',
+        'my-suite --plugins 3             # Multi-plugin marketplace (core, hooks, extras)',
+        'my-suite --plugins 4 --minimal   # Multi-plugin with minimal scaffolds'
+      ]
+
       def call(name:, **options)
         validate_name!(name)
         check_directory!(name)
