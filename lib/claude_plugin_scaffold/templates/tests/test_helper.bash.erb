@@ -1,0 +1,28 @@
+# Common test helper functions for <%= plugin_name %>
+
+# Load bats helpers if available
+if [[ -d "${BATS_TEST_DIRNAME}/../test_helper/bats-support" ]]; then
+  load '../test_helper/bats-support/load'
+  load '../test_helper/bats-assert/load'
+fi
+
+# Project paths
+export PROJECT_ROOT="${BATS_TEST_DIRNAME}/../.."
+export PLUGIN_ROOT="${PROJECT_ROOT}/<%= plugin_name %>-plugin"
+
+# Helper to run hook scripts
+run_hook() {
+  local hook_name="$1"
+  shift
+  run bash "${PLUGIN_ROOT}/hooks/entrypoints/${hook_name}.sh" "$@"
+}
+
+# JSON assertion helper
+assert_json_field() {
+  local json="$1"
+  local field="$2"
+  local expected="$3"
+  local actual
+  actual=$(echo "$json" | jq -r ".$field")
+  [ "$actual" = "$expected" ]
+}

@@ -1,0 +1,15 @@
+{
+  "description": "<%= plugin_name %> hook configuration",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/entrypoints/session-start.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

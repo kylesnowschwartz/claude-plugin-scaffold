@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'dry/cli'
+require_relative 'generator'
 
 module ClaudePluginScaffold
   module CLI
@@ -28,9 +29,27 @@ module ClaudePluginScaffold
       option :full, type: :boolean, default: false, desc: 'Include all components'
 
       def call(name:, **options)
-        puts "Creating plugin: #{name}"
-        puts "Options: #{options.inspect}"
-        # TODO: Implement generator
+        validate_name!(name)
+        check_directory!(name)
+
+        generator = Generator.new(name, options)
+        generator.run
+      end
+
+      private
+
+      def validate_name!(name)
+        return if name.match?(/\A[a-z][a-z0-9-]*[a-z0-9]\z/) || name.match?(/\A[a-z]+\z/)
+
+        puts "Error: Plugin name must be kebab-case (e.g., 'my-plugin')"
+        exit 1
+      end
+
+      def check_directory!(name)
+        return unless Dir.exist?(name)
+
+        puts "Error: Directory '#{name}' already exists"
+        exit 1
       end
     end
 

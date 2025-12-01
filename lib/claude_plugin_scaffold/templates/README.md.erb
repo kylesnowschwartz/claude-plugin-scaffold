@@ -1,0 +1,62 @@
+# <%= plugin_name %>
+
+TODO: Add plugin description.
+
+## Installation
+
+Add this marketplace to Claude Code:
+
+```bash
+claude mcp add-json '<%= plugin_name %>' '{"type": "local", "path": "/path/to/<%= plugin_name %>"}'
+```
+
+Or symlink to your plugins directory:
+
+```bash
+ln -s /path/to/<%= plugin_name %> ~/.claude/plugins/marketplaces/<%= plugin_name %>
+```
+
+## Usage
+
+TODO: Document how to use your plugin.
+
+## Development
+
+### Project Structure
+
+```
+<%= plugin_name %>/
+├── .claude-plugin/
+│   └── marketplace.json     # Local marketplace manifest
+├── <%= plugin_name %>-plugin/
+│   ├── .claude-plugin/
+│   │   └── plugin.json      # Plugin manifest
+<% if options[:hooks] || options[:full] -%>
+│   ├── hooks/               # Event hooks
+<% end -%>
+<% if options[:commands] || options[:full] -%>
+│   ├── commands/            # Slash commands
+<% end -%>
+<% if options[:agents] || options[:full] -%>
+│   ├── agents/              # Subagents
+<% end -%>
+<% if options[:skills] || options[:full] -%>
+│   └── skills/              # Auto-activating skills
+<% end -%>
+<% if options[:tests] || options[:full] -%>
+├── tests/                   # bats tests
+<% end -%>
+└── README.md
+```
+
+<% if options[:tests] || options[:full] -%>
+### Running Tests
+
+```bash
+bats tests/
+```
+<% end -%>
+
+## License
+
+MIT

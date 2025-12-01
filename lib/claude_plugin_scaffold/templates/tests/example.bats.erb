@@ -1,0 +1,16 @@
+#!/usr/bin/env bats
+# Unit tests for <%= plugin_name %>
+
+setup() {
+  load '../test_helper/common'
+}
+
+@test "example test passes" {
+  run echo "hello"
+  [ "$status" -eq 0 ]
+  [ "$output" = "hello" ]
+}
+
+@test "TODO: add real tests" {
+  skip "Not implemented yet"
+}
