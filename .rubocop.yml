@@ -1,0 +1,31 @@
+AllCops:
+  TargetRubyVersion: 3.1
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - 'homebrew-tap/**/*'
+
+# Gemspecs and spec files naturally have long blocks
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - '*.gemspec'
+
+# Generator is inherently large - it creates many file types
+Metrics/ClassLength:
+  Max: 200
+
+# Generator methods are inherently procedural
+Metrics/MethodLength:
+  Max: 20
+
+Metrics/AbcSize:
+  Max: 20
+
+# Skip documentation for small internal classes
+Style/Documentation:
+  Enabled: false
+
+# Dev dependencies in gemspec is fine for simple gems
+Gemspec/DevelopmentDependencies:
+  Enabled: false

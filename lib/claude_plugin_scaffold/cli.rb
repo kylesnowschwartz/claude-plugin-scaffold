@@ -57,7 +57,8 @@ module ClaudePluginScaffold
         # Must start with alphanumeric, no consecutive dots, no trailing dot
         return if name.match?(/\A[a-zA-Z0-9][a-zA-Z0-9._-]*\z/) && !name.match?(/\.\./) && !name.end_with?('.')
 
-        puts "Error: Invalid plugin name. Use letters, numbers, hyphens, underscores, or dots (e.g., 'my-plugin', 'MyPlugin', 'my_plugin.v2')"
+        puts 'Error: Invalid plugin name. ' \
+             "Use letters, numbers, hyphens, underscores, or dots (e.g., 'my-plugin')"
         exit 1
       end
 
