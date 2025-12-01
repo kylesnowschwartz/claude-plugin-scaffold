@@ -3,8 +3,8 @@
 class ClaudePluginScaffold < Formula
   desc 'Scaffold Claude Code plugins with a single command'
   homepage 'https://github.com/kylesnowschwartz/claude-plugin-scaffold'
-  url 'https://github.com/kylesnowschwartz/claude-plugin-scaffold/archive/refs/tags/v0.1.0.tar.gz'
-  sha256 'f74e791ab98df3de68c4a008e1a2f084b01e547a6df961afe5ed647e231426d5'
+  url 'https://github.com/kylesnowschwartz/claude-plugin-scaffold/archive/refs/tags/v0.1.1.tar.gz'
+  sha256 '173f89df3024a4fdd5a914484df6c482e24db979272570a88eb135b1c5275e70'
   license 'MIT'
 
   depends_on 'ruby'
