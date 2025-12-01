@@ -16,7 +16,7 @@ module ClaudePluginScaffold
     end
 
     class New < Dry::CLI::Command
-      desc 'Create a new Claude Code plugin (includes all components by default)'
+      desc 'Create a new Claude Code plugin (use --help for options)'
 
       argument :name, required: true, desc: 'Plugin name (kebab-case)'
 
