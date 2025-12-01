@@ -1,17 +1,19 @@
 {
-  "name": "<%= plugin_name %>",
+  "name": "<%= name %>",
   "owner": {
     "name": "<%= author_name %>",
     "email": "<%= author_email %>"
   },
-  "description": "Local marketplace for <%= plugin_name %> plugin development",
+  "description": "Local marketplace for <%= name %> plugin development",
   "version": "1.0.0",
   "plugins": [
+<% plugin_names.each_with_index do |pname, idx| -%>
     {
-      "name": "<%= plugin_name %>",
+      "name": "<%= pname %>",
       "version": "0.1.0",
-      "source": "./<%= plugin_name %>-plugin",
-      "description": "TODO: Add plugin description"
-    }
+      "source": "<%= multi_plugin? ? "./plugins/#{pname}" : "./plugin" %>",
+      "description": "TODO: Add description for <%= pname %>"
+    }<%= idx < plugin_names.length - 1 ? ',' : '' %>
+<% end -%>
   ]
 }

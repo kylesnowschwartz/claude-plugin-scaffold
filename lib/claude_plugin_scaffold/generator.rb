@@ -7,6 +7,9 @@ module ClaudePluginScaffold
   class Generator
     TEMPLATES_DIR = File.expand_path('templates', __dir__)
 
+    # Default plugin suffixes for multi-plugin marketplaces
+    PLUGIN_SUFFIXES = %w[core hooks extras utils styles].freeze
+
     attr_reader :name, :options, :base_path
 
     def initialize(name, options = {})
@@ -16,42 +19,87 @@ module ClaudePluginScaffold
     end
 
     def run
-      create_base_structure
-      create_plugin_manifest
-      create_marketplace_manifest
+      mkdir(base_path)
+      mkdir(File.join(base_path, '.claude-plugin'))
 
-      create_hooks if options[:hooks] || options[:full]
-      create_commands if options[:commands] || options[:full]
-      create_agents if options[:agents] || options[:full]
-      create_skills if options[:skills] || options[:full]
-      create_mcp if options[:mcp] || options[:full]
-      create_tests if options[:tests] || options[:full]
+      if multi_plugin?
+        create_multi_plugin_structure
+      else
+        create_single_plugin_structure
+      end
 
+      create_tests if options[:tests]
       create_readme
       create_license
       create_gitignore
 
-      puts "\nPlugin '#{name}' created successfully!"
+      puts "\nMarketplace '#{name}' created successfully!"
       puts "  cd #{name}"
     end
 
     private
 
-    def create_base_structure
-      # Repository structure (like bumper-lanes, handoff)
-      mkdir(base_path)
-      mkdir(plugin_path)
-      mkdir(File.join(plugin_path, '.claude-plugin'))
-      mkdir(File.join(base_path, '.claude-plugin'))
+    def multi_plugin?
+      plugin_count > 1
     end
 
-    def plugin_path
-      @plugin_path ||= File.join(base_path, "#{name}-plugin")
+    def plugin_count
+      (options[:plugins] || 1).to_i
     end
 
-    def create_plugin_manifest
-      write_template('plugin.json.erb', File.join(plugin_path, '.claude-plugin', 'plugin.json'))
-      puts "  create #{name}-plugin/.claude-plugin/plugin.json"
+    def plugin_names
+      @plugin_names ||= if multi_plugin?
+                          PLUGIN_SUFFIXES.take(plugin_count).map { |suffix| "#{name}-#{suffix}" }
+                        else
+                          [name] # Single plugin uses marketplace name
+                        end
+    end
+
+    # Single plugin: my-marketplace/plugin/
+    def create_single_plugin_structure
+      @current_plugin_name = name
+      plugin_dir = File.join(base_path, 'plugin')
+      mkdir(plugin_dir)
+      mkdir(File.join(plugin_dir, '.claude-plugin'))
+
+      create_plugin_manifest(plugin_dir, name)
+      create_plugin_components(plugin_dir, name)
+      create_marketplace_manifest
+    end
+
+    # Multi-plugin: my-marketplace/plugins/my-marketplace-core/, etc.
+    def create_multi_plugin_structure
+      plugins_dir = File.join(base_path, 'plugins')
+      mkdir(plugins_dir)
+
+      plugin_names.each do |plugin_name|
+        @current_plugin_name = plugin_name
+        plugin_dir = File.join(plugins_dir, plugin_name)
+        mkdir(plugin_dir)
+        mkdir(File.join(plugin_dir, '.claude-plugin'))
+
+        create_plugin_manifest(plugin_dir, plugin_name)
+        create_plugin_components(plugin_dir, plugin_name)
+      end
+
+      create_marketplace_manifest
+    end
+
+    def create_plugin_manifest(plugin_dir, plugin_name)
+      @current_plugin_name = plugin_name
+      write_template('plugin.json.erb', File.join(plugin_dir, '.claude-plugin', 'plugin.json'))
+      relative_path = plugin_dir.sub("#{base_path}/", '')
+      puts "  create #{relative_path}/.claude-plugin/plugin.json"
+    end
+
+    def create_plugin_components(plugin_dir, plugin_name)
+      @current_plugin_name = plugin_name
+
+      create_hooks(plugin_dir, plugin_name) if options[:hooks]
+      create_commands(plugin_dir, plugin_name) if options[:commands]
+      create_agents(plugin_dir, plugin_name) if options[:agents]
+      create_skills(plugin_dir, plugin_name) if options[:skills]
+      create_mcp(plugin_dir, plugin_name) if options[:mcp]
     end
 
     def create_marketplace_manifest
@@ -59,49 +107,59 @@ module ClaudePluginScaffold
       puts '  create .claude-plugin/marketplace.json'
     end
 
-    def create_hooks
-      hooks_dir = File.join(plugin_path, 'hooks')
+    def create_hooks(plugin_dir, plugin_name)
+      hooks_dir = File.join(plugin_dir, 'hooks')
       mkdir(hooks_dir)
       mkdir(File.join(hooks_dir, 'entrypoints'))
       mkdir(File.join(hooks_dir, 'lib'))
 
+      @current_plugin_name = plugin_name
       write_template('hooks/hooks.json.erb', File.join(hooks_dir, 'hooks.json'))
       write_template('hooks/session-start.sh.erb', File.join(hooks_dir, 'entrypoints', 'session-start.sh'),
                      executable: true)
       write_template('hooks/common.sh.erb', File.join(hooks_dir, 'lib', 'common.sh'))
 
-      puts "  create #{name}-plugin/hooks/"
+      relative_path = plugin_dir.sub("#{base_path}/", '')
+      puts "  create #{relative_path}/hooks/"
     end
 
-    def create_commands
-      commands_dir = File.join(plugin_path, 'commands')
+    def create_commands(plugin_dir, plugin_name)
+      commands_dir = File.join(plugin_dir, 'commands')
       mkdir(commands_dir)
 
+      @current_plugin_name = plugin_name
       write_template('commands/example.md.erb', File.join(commands_dir, 'example.md'))
-      puts "  create #{name}-plugin/commands/"
+      relative_path = plugin_dir.sub("#{base_path}/", '')
+      puts "  create #{relative_path}/commands/"
     end
 
-    def create_agents
-      agents_dir = File.join(plugin_path, 'agents')
+    def create_agents(plugin_dir, plugin_name)
+      agents_dir = File.join(plugin_dir, 'agents')
       mkdir(agents_dir)
 
+      @current_plugin_name = plugin_name
       write_template('agents/example.md.erb', File.join(agents_dir, 'example.md'))
-      puts "  create #{name}-plugin/agents/"
+      relative_path = plugin_dir.sub("#{base_path}/", '')
+      puts "  create #{relative_path}/agents/"
     end
 
-    def create_skills
-      skills_dir = File.join(plugin_path, 'skills')
+    def create_skills(plugin_dir, plugin_name)
+      skills_dir = File.join(plugin_dir, 'skills')
       example_skill = File.join(skills_dir, 'example-skill')
       mkdir(skills_dir)
       mkdir(example_skill)
 
+      @current_plugin_name = plugin_name
       write_template('skills/SKILL.md.erb', File.join(example_skill, 'SKILL.md'))
-      puts "  create #{name}-plugin/skills/"
+      relative_path = plugin_dir.sub("#{base_path}/", '')
+      puts "  create #{relative_path}/skills/"
     end
 
-    def create_mcp
-      write_template('mcp.json.erb', File.join(plugin_path, '.mcp.json'))
-      puts "  create #{name}-plugin/.mcp.json"
+    def create_mcp(plugin_dir, plugin_name)
+      @current_plugin_name = plugin_name
+      write_template('mcp.json.erb', File.join(plugin_dir, '.mcp.json'))
+      relative_path = plugin_dir.sub("#{base_path}/", '')
+      puts "  create #{relative_path}/.mcp.json"
     end
 
     def create_tests

@@ -16,23 +16,26 @@ module ClaudePluginScaffold
     end
 
     class New < Dry::CLI::Command
-      desc 'Create a new Claude Code plugin'
+      desc 'Create a new Claude Code plugin (includes all components by default)'
 
       argument :name, required: true, desc: 'Plugin name (kebab-case)'
 
-      option :hooks, type: :boolean, default: false, desc: 'Include hooks boilerplate'
-      option :commands, type: :boolean, default: false, desc: 'Include commands directory'
-      option :agents, type: :boolean, default: false, desc: 'Include agents directory'
-      option :skills, type: :boolean, default: false, desc: 'Include skills directory'
-      option :mcp, type: :boolean, default: false, desc: 'Include MCP server config'
-      option :tests, type: :boolean, default: false, desc: 'Include bats test scaffold'
-      option :full, type: :boolean, default: false, desc: 'Include all components'
+      option :plugins, type: :integer, default: 1, desc: 'Number of plugins to create (for multi-plugin marketplaces)'
+      option :minimal, type: :boolean, default: false, desc: 'Create minimal plugin (manifests only)'
+      option :hooks, type: :boolean, default: nil, desc: 'Include hooks boilerplate'
+      option :commands, type: :boolean, default: nil, desc: 'Include commands directory'
+      option :agents, type: :boolean, default: nil, desc: 'Include agents directory'
+      option :skills, type: :boolean, default: nil, desc: 'Include skills directory'
+      option :mcp, type: :boolean, default: nil, desc: 'Include MCP server config'
+      option :tests, type: :boolean, default: nil, desc: 'Include bats test scaffold'
 
       def call(name:, **options)
         validate_name!(name)
         check_directory!(name)
+        validate_plugins_count!(options[:plugins])
 
-        generator = Generator.new(name, options)
+        resolved_options = resolve_options(options)
+        generator = Generator.new(name, resolved_options.merge(plugins: options[:plugins]))
         generator.run
       end
 
@@ -50,6 +53,40 @@ module ClaudePluginScaffold
 
         puts "Error: Directory '#{name}' already exists"
         exit 1
+      end
+
+      def validate_plugins_count!(count)
+        count_int = count.to_i
+        return if count_int.positive? && count_int <= 10
+
+        puts 'Error: --plugins must be between 1 and 10'
+        exit 1
+      end
+
+      def resolve_options(options)
+        # If --minimal, nothing gets included
+        if options[:minimal]
+          return {
+            hooks: false, commands: false, agents: false,
+            skills: false, mcp: false, tests: false
+          }
+        end
+
+        # Check if any component flags were explicitly set
+        component_flags = %i[hooks commands agents skills mcp tests]
+        any_explicit = component_flags.any? { |f| !options[f].nil? }
+
+        if any_explicit
+          # Use explicit flags, default unset to false
+          component_flags.each_with_object({}) do |flag, result|
+            result[flag] = options[flag] || false
+          end
+        else
+          # No flags = full (all components)
+          component_flags.each_with_object({}) do |flag, result|
+            result[flag] = true
+          end
+        end
       end
     end
 
